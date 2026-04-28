@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(docker compose *)",
+      "Bash(chmod 777 /home/user/cleaning-supervision/backend/logs)",
+      "Bash(sudo chmod *)",
+      "Bash(docker run *)",
+      "Bash(docker restart *)",
+      "Bash(docker volume *)",
+      "Bash(python3 -c \"import sys,json; c=json.load\\(sys.stdin\\)[0]; print\\(json.dumps\\(c['HostConfig']['PortBindings'], indent=2\\)\\)\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@dzedze.app\",\"password\":\"Admin@123!\"}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/api/v1/sites -H \"Authorization: Bearer test\")",
+      "Bash(chmod +x /home/user/cleaning-supervision/mobile/scripts/setup.sh)",
+      "Bash(flutter --version)",
+      "Bash(flutter create *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter build *)",
+      "Bash(flutter run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/)",
+      "Bash(pkill -f \"flutter run\")",
+      "Bash(curl -s -X OPTIONS http://localhost:3000/api/v1/auth/login -H 'Origin: http://localhost:5174' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: Content-Type,Authorization' -v)",
+      "Bash(fuser -k 5174/tcp)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" http://localhost:5174/)",
+      "Bash(pkill -f \"dart.*flutter\")",
+      "Bash(python3 -m http.server 5174 --directory build/web)",
+      "Bash(curl -s http://localhost:5174)",
+      "Bash(curl -s -L \"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js\" -o web/sql-wasm.js)",
+      "Bash(curl -s -L \"https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.wasm\" -o web/sql-wasm.wasm)",
+      "Bash(xxd web/sql-wasm.wasm)",
+      "Bash(xxd /home/user/cleaning-supervision/mobile/build/web/sql-wasm.wasm)",
+      "Bash(pkill -f \"http.server 5174\")",
+      "Bash(curl -s http://localhost:5174/sql-wasm.wasm)",
+      "Bash(xxd)",
+      "Bash(kill 396890)",
+      "Bash(python3 -m http.server 5174 --directory /home/user/cleaning-supervision/mobile/build/web)"
+    ]
+  }
+}
