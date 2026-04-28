@@ -5,10 +5,11 @@ import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
   Plus, Search, Filter, Play, CheckCircle2, Clock,
-  AlertCircle, XCircle, ChevronRight, X, MapPin, User, Calendar, Bot,
+  AlertCircle, XCircle, ChevronRight, X, MapPin, User, Calendar, Bot, Radio,
   TrendingUp, TrendingDown, Minus,
 } from 'lucide-react';
 import { apiClient } from '../services/api';
+import { LiveStreamPanel } from '../components/video/LiveStreamPanel';
 import { clsx } from 'clsx';
 
 // ── types ─────────────────────────────────────────────────────
@@ -322,6 +323,7 @@ function MissionReportModal({ missionId, onClose }: { missionId: string; onClose
 // ── Mission detail slide panel ─────────────────────────────────
 function MissionPanel({ id, onClose }: { id: string; onClose: () => void }) {
   const [showReport, setShowReport] = useState(false);
+  const [showLive, setShowLive]     = useState(false);
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['mission', id],
@@ -429,14 +431,46 @@ function MissionPanel({ id, onClose }: { id: string; onClose: () => void }) {
               Marquer terminée
             </button>
           )}
-          <button
-            onClick={() => setShowReport(true)}
-            className="w-full py-2 rounded-xl text-sm font-semibold border border-guin-border text-guin-cream hover:bg-guin-dark transition-colors flex items-center justify-center gap-2"
-          >
-            <Bot size={15} /> Rapport IA
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowReport(true)}
+              className="flex-1 py-2 rounded-xl text-sm font-semibold border border-guin-border text-guin-cream hover:bg-guin-dark transition-colors flex items-center justify-center gap-2"
+            >
+              <Bot size={15} /> Rapport IA
+            </button>
+            {m.status === 'in_progress' && m.agent_id && (
+              <button
+                onClick={() => setShowLive(l => !l)}
+                className={clsx(
+                  'flex-1 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2',
+                  showLive
+                    ? 'bg-red-600 text-white hover:bg-red-700'
+                    : 'border border-guin-terracotta text-guin-terracotta hover:bg-guin-terracotta/10',
+                )}
+              >
+                <Radio size={15} /> {showLive ? 'Fermer Live' : 'Live'}
+              </button>
+            )}
+          </div>
         </div>
       )}
+
+      {/* Live stream panel */}
+      <AnimatePresence>
+        {showLive && m?.agent_id && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-t border-guin-border"
+          >
+            <div className="p-4">
+              <LiveStreamPanel missionId={id} agentId={m.agent_id} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showReport && <MissionReportModal missionId={id} onClose={() => setShowReport(false)} />}
       </AnimatePresence>

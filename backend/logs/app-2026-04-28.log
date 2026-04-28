@@ -125,3 +125,10 @@
 {"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-28T17:16:33.869Z"}
 {"level":"info","message":"📦 Environment: production","timestamp":"2026-04-28T17:16:33.869Z"}
 {"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-28T17:16:33.869Z"}
+{"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-28T17:17:55.423Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-28T17:18:39.707Z"}
+{"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-28T18:22:14.863Z"}
+{"level":"error","message":"Unhandled error: invalid input syntax for type uuid: \"\"","path":"/api/v1/sites","stack":"error: invalid input syntax for type uuid: \"\"\n    at /app/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async createSite (/app/dist/controllers/site.controller.js:60:26)","timestamp":"2026-04-28T18:24:35.837Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-28T18:28:46.346Z"}
+{"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-28T21:05:27.323Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-28T21:05:42.457Z"}

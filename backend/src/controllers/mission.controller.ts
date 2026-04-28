@@ -552,14 +552,24 @@ export async function completeMission(req: Request, res: Response, next: NextFun
       }
     }
 
+    // Auto-score from AI media analysis (best-effort, non-blocking)
+    const mediaScoreRes = await db.query(
+      `SELECT ROUND(AVG(quality_score)::numeric, 1) AS ai_score
+       FROM media
+       WHERE mission_id = $1 AND quality_score IS NOT NULL AND deleted_at IS NULL`,
+      [id]
+    );
+    const aiScore = mediaScoreRes.rows[0]?.ai_score ?? null;
+
     await db.query(`
       UPDATE missions
-      SET status       = 'review',
-          completed_at = NOW(),
-          checklist    = COALESCE($1, checklist),
-          notes        = COALESCE($2, notes)
+      SET status        = 'review',
+          completed_at  = NOW(),
+          checklist     = COALESCE($1, checklist),
+          notes         = COALESCE($2, notes),
+          quality_score = COALESCE($4, quality_score)
       WHERE id = $3
-    `, [checklist ? JSON.stringify(checklist) : null, notes, id]);
+    `, [checklist ? JSON.stringify(checklist) : null, notes, id, aiScore]);
 
     await AuditService.log({
       userId,
