@@ -117,3 +117,6 @@
 {"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-28T16:29:52.023Z"}
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-28T16:33:24.122Z"}
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-28T16:45:41.528Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-28T17:11:54.969Z"}
+{"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-28T17:12:14.720Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-28T17:13:50.256Z"}

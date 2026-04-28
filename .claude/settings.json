@@ -36,7 +36,11 @@
       "Bash(curl -s http://localhost:5174/sql-wasm.wasm)",
       "Bash(xxd)",
       "Bash(kill 396890)",
-      "Bash(python3 -m http.server 5174 --directory /home/user/cleaning-supervision/mobile/build/web)"
+      "Bash(python3 -m http.server 5174 --directory /home/user/cleaning-supervision/mobile/build/web)",
+      "Bash(curl -s http://localhost:5174/main.dart.js)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
     ]
   }
 }
