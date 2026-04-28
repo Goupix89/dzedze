@@ -120,3 +120,8 @@
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-28T17:11:54.969Z"}
 {"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-28T17:12:14.720Z"}
 {"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-28T17:13:50.256Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-28T17:16:33.730Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-28T17:16:33.779Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-28T17:16:33.869Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-28T17:16:33.869Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-28T17:16:33.869Z"}
