@@ -1,0 +1,7 @@
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T07:02:39.317Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T07:02:39.437Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T07:02:39.566Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T07:02:39.567Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T07:02:39.568Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-29T07:03:48.675Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T07:04:13.000Z"}
