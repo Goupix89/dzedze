@@ -425,6 +425,114 @@ export async function getMission(req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 }
 
+// ── GET /missions/history ──────────────────────────────────────
+export async function getMissionHistory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId, role } = auth(req);
+    const { agent_id } = req.query as { agent_id?: string };
+
+    const filters: string[] = [];
+    const params: unknown[] = [];
+
+    if (role === 'agent') {
+      params.push(userId);
+      filters.push(`m.agent_id = $${params.length}`);
+    } else if (agent_id) {
+      params.push(agent_id);
+      filters.push(`m.agent_id = $${params.length}`);
+    }
+
+    filters.push(`m.completed_at IS NOT NULL`);
+    const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+
+    const result = await db.query(`
+      SELECT
+        m.id,
+        m.title,
+        m.description,
+        m.status,
+        m.scheduled_start,
+        m.scheduled_end,
+        m.started_at,
+        m.completed_at,
+        m.quality_score,
+        m.notes,
+        m.ai_report AS report,
+        s.name AS site_name,
+        s.address AS site_address,
+        s.city AS site_city,
+        a.first_name || ' ' || a.last_name AS agent_name,
+        a.phone AS agent_phone
+      FROM missions m
+      JOIN sites s ON s.id = m.site_id
+      LEFT JOIN users a ON a.id = m.agent_id
+      ${where}
+      ORDER BY m.completed_at DESC
+      LIMIT 20
+    `, params);
+
+    res.json({ success: true, data: result.rows });
+  } catch (err) { next(err); }
+}
+
+// ── POST /missions/:id/report ───────────────────────────────────
+export async function submitMissionReport(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId, role } = auth(req);
+    const { id } = req.params;
+    const { notes, difficulty, photos } = req.body as {
+      notes?: string;
+      difficulty?: number;
+      photos?: Array<{ url: string; sizeBytes?: number; takenAt?: string }>;
+    };
+
+    if (!notes && difficulty == null && (photos == null || photos.length == 0)) {
+      throw new AppError('Au moins une donnée de rapport est requise', 400);
+    }
+    if (difficulty != null && (difficulty < 1 || difficulty > 5)) {
+      throw new AppError('difficulty doit être entre 1 et 5', 400);
+    }
+
+    const result = await db.query('SELECT * FROM missions WHERE id = $1', [id]);
+    const mission = result.rows[0];
+    if (!mission) throw new AppError('Mission introuvable', 404);
+    if (role === 'agent' && mission.agent_id !== userId) {
+      throw new AppError('Cette mission ne vous est pas assignée', 403);
+    }
+
+    const reportPayload = {
+      difficulty: difficulty ?? mission.ai_report?.difficulty,
+      photos: photos ?? mission.ai_report?.photos ?? [],
+      submittedBy: userId,
+      submittedAt: new Date().toISOString(),
+    };
+
+    await db.query(`
+      UPDATE missions
+      SET notes = COALESCE($1, notes),
+          ai_report = $2
+      WHERE id = $3
+    `, [notes ?? null, JSON.stringify(reportPayload), id]);
+
+    await AuditService.log({
+      userId,
+      action: 'MISSION_REPORT_SUBMITTED',
+      resourceType: 'mission',
+      resourceId: id,
+      details: { difficulty, photosCount: photos?.length ?? 0 },
+    });
+
+    if (mission.manager_id) {
+      io.to(`user:${mission.manager_id}`).emit('mission:report_submitted', {
+        missionId: id,
+        agentId: mission.agent_id,
+      });
+    }
+
+    res.json({ success: true, message: 'Rapport de mission enregistré', data: { report: reportPayload } });
+  } catch (err) { next(err); }
+}
+
 // ── PUT /missions/:id ─────────────────────────────────────────
 export async function updateMission(req: Request, res: Response, next: NextFunction) {
   try {

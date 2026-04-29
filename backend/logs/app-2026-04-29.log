@@ -68,3 +68,22 @@
 {"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:46:20.967Z"}
 {"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:46:20.968Z"}
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T08:46:57.193Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T12:23:56.729Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T12:24:51.302Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T12:24:51.352Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T12:24:51.421Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T12:24:51.422Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T12:24:51.423Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T14:53:12.800Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-29T14:54:00.137Z"}
+{"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-29T14:54:13.189Z"}
+{"level":"info","message":"New manager signup: manager1@dzedze.app, plan: trial, org: Clean Plus","timestamp":"2026-04-29T14:56:21.754Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T18:26:44.641Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T18:26:44.920Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T18:26:45.480Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T18:26:45.481Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T18:26:45.495Z"}
+{"level":"info","message":"User manager1@dzedze.app logged in","timestamp":"2026-04-29T19:09:20.872Z"}
+{"level":"info","message":"User manager1@dzedze.app logged in","timestamp":"2026-04-29T19:29:11.237Z"}
+{"level":"info","message":"User manager1@dzedze.app logged in","timestamp":"2026-04-29T20:03:43.895Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-29T20:04:33.749Z"}
