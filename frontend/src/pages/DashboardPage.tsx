@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Camera, CheckCircle2, Clock, AlertTriangle,
-  TrendingUp, Star, Wifi, LogOut,
+  TrendingUp, Star, Wifi, LogOut, Timer, BarChart2,
 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -138,11 +138,27 @@ export default function DashboardPage() {
 
       <main className="p-6 space-y-6">
         {/* ── Stats ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <StatCard icon={CheckCircle2} label="Missions aujourd'hui" value={stats?.todayMissions ?? '—'} trend={stats?.missionsTrend} accent="#2D6A4F" />
-          <StatCard icon={Clock}       label="En cours"              value={stats?.inProgress ?? '—'}    accent="#D4A017" />
-          <StatCard icon={Camera}      label="Médias capturés"       value={stats?.mediaToday ?? '—'}    trend={stats?.mediaTrend} accent="#C1440E" />
-          <StatCard icon={Star}        label="Score qualité moyen"   value={stats?.avgQualityScore ? `${stats.avgQualityScore}/10` : '—'} trend={stats?.qualityTrend} accent="#D4A017" />
+          <StatCard icon={Clock}        label="En cours"              value={stats?.inProgress ?? '—'}    accent="#D4A017" />
+          <StatCard icon={Camera}       label="Médias capturés"       value={stats?.mediaToday ?? '—'}    trend={stats?.mediaTrend} accent="#C1440E" />
+          <StatCard icon={Star}         label="Score qualité moyen"   value={stats?.avgQualityScore ? `${stats.avgQualityScore}/10` : '—'} trend={stats?.qualityTrend} accent="#D4A017" />
+          <StatCard
+            icon={Timer}
+            label="Durée moyenne mission"
+            value={stats?.avgDurationMinutes != null
+              ? stats.avgDurationMinutes >= 60
+                ? `${Math.floor(stats.avgDurationMinutes / 60)}h ${stats.avgDurationMinutes % 60}min`
+                : `${stats.avgDurationMinutes} min`
+              : '—'}
+            accent="#6B7280"
+          />
+          <StatCard
+            icon={BarChart2}
+            label="Taux de complétion"
+            value={stats?.completionRate != null ? `${stats.completionRate}%` : '—'}
+            accent="#2D6A4F"
+          />
         </div>
 
         {/* ── Charts row ────────────────────────────────────── */}

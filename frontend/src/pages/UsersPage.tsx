@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Search, Shield, UserCheck, Wifi, WifiOff, Star, X, ChevronDown } from 'lucide-react';
+import { Search, UserCheck, Wifi, WifiOff, Star, X, ChevronDown, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 import { apiClient } from '../services/api';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../store/auth.store';
@@ -106,11 +106,258 @@ function RoleSelect({ user }: { user: User }) {
   );
 }
 
+// ── Agent creation modal ───────────────────────────────────────
+const SPECIALTIES_OPTIONS = [
+  'Nettoyage standard', 'Nettoyage hôpital', 'Nettoyage industriel',
+  'Nettoyage vitrerie', 'Nettoyage cuisine', 'Remise en état',
+  'Désinfection', 'Nettoyage après chantier', 'Entretien des sols',
+];
+
+const EMPTY_AGENT = {
+  firstName: '', lastName: '', email: '', phone: '', password: '',
+  idCardNumber: '', birthDate: '', birthPlace: '',
+  homeAddress: '', bloodType: '',
+  emergencyContactName: '', emergencyContactPhone: '',
+  contractType: 'cdd', hireDate: '',
+  specialties: [] as string[],
+  uniformSize: '', shoeSize: '', notes: '',
+};
+
+function CreateAgentModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ ...EMPTY_AGENT });
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<'identity' | 'contract' | 'equipment'>('identity');
+
+  const set = (k: keyof typeof EMPTY_AGENT) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm(f => ({ ...f, [k]: e.target.value }));
+
+  function toggleSpecialty(s: string) {
+    setForm(f => ({
+      ...f,
+      specialties: f.specialties.includes(s)
+        ? f.specialties.filter(x => x !== s)
+        : [...f.specialties, s],
+    }));
+  }
+
+  const mutation = useMutation({
+    mutationFn: () => apiClient.post('/auth/register', form),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); onClose(); },
+    onError: (e: any) => setError(e.response?.data?.message ?? 'Erreur lors de la création.'),
+  });
+
+  function submit() {
+    setError(null);
+    if (!form.firstName || !form.lastName || !form.email) {
+      setError('Prénom, nom et email sont obligatoires.'); return;
+    }
+    mutation.mutate();
+  }
+
+  const inputClass = 'w-full bg-guin-dark border border-guin-border rounded-xl px-3 py-2 text-sm text-white placeholder-guin-border focus:outline-none focus:border-guin-gold';
+  const labelClass = 'block text-xs text-guin-muted mb-1';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+        className="w-full max-w-2xl bg-guin-card border border-guin-border rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+      >
+        {/* Kente header bar */}
+        <div className="h-1" style={{ background: 'repeating-linear-gradient(90deg,#C1440E 0,#C1440E 12px,#D4A017 12px,#D4A017 24px,#2D6A4F 24px,#2D6A4F 36px,#D4A017 36px,#D4A017 48px)' }} />
+
+        {/* Title */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-guin-border flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <UserPlus size={18} className="text-guin-gold" />
+            <h2 className="text-guin-cream font-bold">Nouvel agent</h2>
+          </div>
+          <button onClick={onClose} className="text-guin-muted hover:text-guin-cream"><X size={20} /></button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-guin-border flex-shrink-0">
+          {(['identity', 'contract', 'equipment'] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={clsx('px-5 py-2.5 text-xs font-medium transition-colors border-b-2 -mb-px',
+                tab === t ? 'border-guin-gold text-guin-gold' : 'border-transparent text-guin-muted hover:text-guin-cream')}>
+              {t === 'identity' ? 'Identité & Contact' : t === 'contract' ? 'Contrat & Spécialités' : 'Équipement & Notes'}
+            </button>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 p-6">
+          {tab === 'identity' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Prénom *</label>
+                  <input className={inputClass} value={form.firstName} onChange={set('firstName')} placeholder="Kofi" />
+                </div>
+                <div>
+                  <label className={labelClass}>Nom *</label>
+                  <input className={inputClass} value={form.lastName} onChange={set('lastName')} placeholder="Mensah" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Email *</label>
+                  <input type="email" className={inputClass} value={form.email} onChange={set('email')} placeholder="kofi@agence.com" />
+                </div>
+                <div>
+                  <label className={labelClass}>Téléphone</label>
+                  <input type="tel" className={inputClass} value={form.phone} onChange={set('phone')} placeholder="+228 90 00 00 00" />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Mot de passe (laissez vide → Agent@123!)</label>
+                <input type="password" className={inputClass} value={form.password} onChange={set('password')} placeholder="Min. 8 caractères" />
+              </div>
+
+              <div className="pt-2 border-t border-guin-border">
+                <p className="text-xs font-semibold text-guin-muted uppercase mb-3">Pièce d'identité</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>N° CNI / Passeport</label>
+                    <input className={inputClass} value={form.idCardNumber} onChange={set('idCardNumber')} placeholder="TG-1234567" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Groupe sanguin</label>
+                    <select className={inputClass} value={form.bloodType} onChange={set('bloodType')}>
+                      <option value="">— Sélectionner —</option>
+                      {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className={labelClass}>Date de naissance</label>
+                    <input type="date" className={inputClass} value={form.birthDate} onChange={set('birthDate')} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Lieu de naissance</label>
+                    <input className={inputClass} value={form.birthPlace} onChange={set('birthPlace')} placeholder="Lomé" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className={labelClass}>Adresse domicile</label>
+                  <input className={inputClass} value={form.homeAddress} onChange={set('homeAddress')} placeholder="12 Rue des Fleurs, Lomé" />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-guin-border">
+                <p className="text-xs font-semibold text-guin-muted uppercase mb-3">Contact en cas d'urgence</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Nom du contact</label>
+                    <input className={inputClass} value={form.emergencyContactName} onChange={set('emergencyContactName')} placeholder="Ama Mensah" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Téléphone du contact</label>
+                    <input type="tel" className={inputClass} value={form.emergencyContactPhone} onChange={set('emergencyContactPhone')} placeholder="+228 91 00 00 00" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'contract' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Type de contrat</label>
+                  <select className={inputClass} value={form.contractType} onChange={set('contractType')}>
+                    <option value="cdd">CDD</option>
+                    <option value="cdi">CDI</option>
+                    <option value="interim">Intérim</option>
+                    <option value="vacataire">Vacataire</option>
+                    <option value="freelance">Freelance</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Date d'embauche</label>
+                  <input type="date" className={inputClass} value={form.hireDate} onChange={set('hireDate')} />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-guin-border">
+                <p className="text-xs font-semibold text-guin-muted uppercase mb-3">Spécialités</p>
+                <div className="flex flex-wrap gap-2">
+                  {SPECIALTIES_OPTIONS.map(s => (
+                    <button key={s} type="button" onClick={() => toggleSpecialty(s)}
+                      className={clsx('text-xs px-3 py-1.5 rounded-full border transition-all',
+                        form.specialties.includes(s)
+                          ? 'bg-guin-green/20 border-guin-green text-guin-green'
+                          : 'border-guin-border text-guin-muted hover:border-gray-500')}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'equipment' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Taille uniforme</label>
+                  <select className={inputClass} value={form.uniformSize} onChange={set('uniformSize')}>
+                    <option value="">— Sélectionner —</option>
+                    {['XS','S','M','L','XL','XXL','3XL'].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>Pointure</label>
+                  <input className={inputClass} value={form.shoeSize} onChange={set('shoeSize')} placeholder="42" />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Notes internes</label>
+                <textarea
+                  className={clsx(inputClass, 'resize-none')} rows={5}
+                  value={form.notes} onChange={set('notes')}
+                  placeholder="Observations sur l'agent, certifications spéciales, restrictions médicales…"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-guin-border flex-shrink-0 space-y-3">
+          {error && (
+            <div className="flex items-start gap-2 p-2.5 bg-red-900/20 border border-red-800 rounded-xl">
+              <AlertCircle size={13} className="text-red-400 mt-0.5 flex-shrink-0" />
+              <p className="text-red-300 text-xs">{error}</p>
+            </div>
+          )}
+          <div className="flex gap-3">
+            <button onClick={onClose} className="px-4 py-2.5 text-sm border border-guin-border rounded-xl text-guin-muted hover:bg-guin-dark transition-colors">
+              Annuler
+            </button>
+            <button onClick={submit} disabled={mutation.isPending}
+              className="flex-1 py-2.5 text-sm font-bold bg-guin-gold text-guin-dark rounded-xl hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+              {mutation.isPending ? <><Loader2 size={15} className="animate-spin" /> Création…</> : 'Créer l\'agent'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────
 export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const { user: me } = useAuthStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ['users', roleFilter, statusFilter],
@@ -141,7 +388,19 @@ export default function UsersPage() {
             {available} disponible{available !== 1 ? 's' : ''} · {onMission} en mission
           </p>
         </div>
+        {(me?.role === 'admin' || me?.role === 'manager') && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-guin-gold text-guin-dark rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+          >
+            <UserPlus size={16} /> Nouvel agent
+          </button>
+        )}
       </div>
+
+      <AnimatePresence>
+        {showCreate && <CreateAgentModal onClose={() => setShowCreate(false)} />}
+      </AnimatePresence>
 
       {/* Stat pills */}
       <div className="flex gap-3 mb-5 flex-wrap">

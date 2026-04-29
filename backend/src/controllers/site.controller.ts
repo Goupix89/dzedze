@@ -56,8 +56,8 @@ export async function createSite(req: Request, res: Response, next: NextFunction
                          surface_m2, site_type, checklist_template, manager_id)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       RETURNING *
-    `, [name, address, city, country, latitude ?? null, longitude ?? null, description ?? null,
-        surface_m2 ?? null, site_type, JSON.stringify(checklist_template), manager_id ?? null]);
+    `, [name, address, city, country, latitude || null, longitude || null, description || null,
+        surface_m2 || null, site_type, JSON.stringify(checklist_template), manager_id || null]);
 
     await AuditService.log({
       userId: auth(req).userId, action: 'site_created',

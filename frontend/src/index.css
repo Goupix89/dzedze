@@ -15,6 +15,116 @@
   ::-webkit-scrollbar-thumb:hover { background: #C1440E; }
 }
 
+/* ── react-datepicker dark theme ──────────────────────────── */
+.dtp-popper { z-index: 9999 !important; }
+
+.dtp-calendar {
+  background: #1C1007 !important;
+  border: 1px solid #3D2010 !important;
+  border-radius: 16px !important;
+  font-family: inherit !important;
+  color: #F5ECD7 !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+}
+
+.dtp-calendar .react-datepicker__header {
+  background: #120A04 !important;
+  border-bottom: 1px solid #3D2010 !important;
+  border-radius: 16px 16px 0 0 !important;
+  padding: 12px 0 8px !important;
+}
+
+.dtp-calendar .react-datepicker__current-month,
+.dtp-calendar .react-datepicker-time__header,
+.dtp-calendar .react-datepicker__day-name {
+  color: #D4A017 !important;
+  font-weight: 600 !important;
+}
+
+.dtp-calendar .react-datepicker__day {
+  color: #F5ECD7 !important;
+  border-radius: 8px !important;
+  transition: background 0.15s !important;
+}
+
+.dtp-calendar .react-datepicker__day:hover {
+  background: #3D2010 !important;
+  color: #F5ECD7 !important;
+}
+
+.dtp-calendar .react-datepicker__day--selected,
+.dtp-calendar .react-datepicker__day--keyboard-selected {
+  background: #C1440E !important;
+  color: #F5ECD7 !important;
+  font-weight: bold !important;
+}
+
+.dtp-calendar .react-datepicker__day--today {
+  border: 1px solid #D4A017 !important;
+  background: transparent !important;
+  color: #D4A017 !important;
+}
+
+.dtp-calendar .react-datepicker__day--today.react-datepicker__day--selected {
+  background: #C1440E !important;
+  color: #F5ECD7 !important;
+  border-color: transparent !important;
+}
+
+.dtp-calendar .react-datepicker__day--outside-month {
+  color: #5A3A1A !important;
+}
+
+.dtp-calendar .react-datepicker__day--disabled {
+  color: #3D2010 !important;
+  cursor: not-allowed !important;
+}
+
+.dtp-calendar .react-datepicker__navigation-icon::before {
+  border-color: #D4A017 !important;
+}
+
+.dtp-calendar .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #F5ECD7 !important;
+}
+
+.dtp-calendar .react-datepicker__time-container {
+  border-left: 1px solid #3D2010 !important;
+}
+
+.dtp-calendar .react-datepicker__time {
+  background: #1C1007 !important;
+}
+
+.dtp-calendar .react-datepicker__time-list-item {
+  color: #F5ECD7 !important;
+  border-radius: 6px !important;
+  margin: 0 4px !important;
+}
+
+.dtp-calendar .react-datepicker__time-list-item:hover {
+  background: #3D2010 !important;
+}
+
+.dtp-calendar .react-datepicker__time-list-item--selected {
+  background: #C1440E !important;
+  color: #F5ECD7 !important;
+  font-weight: bold !important;
+}
+
+.dtp-calendar .react-datepicker__close-icon::after {
+  background: #C1440E !important;
+  border-radius: 50% !important;
+  font-size: 12px !important;
+}
+
+/* Input inherits full width from wrapper */
+.dtp-wrapper .react-datepicker-wrapper,
+.dtp-wrapper .react-datepicker__input-container {
+  display: block !important;
+  width: 100% !important;
+}
+
 @layer utilities {
   .kente-border {
     border-image: repeating-linear-gradient(

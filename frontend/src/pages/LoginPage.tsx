@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
@@ -77,9 +77,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await apiClient.post('/auth/login', { email, password });
-      const { user, accessToken } = res.data.data;
-      setAuth(user, accessToken);
-      localStorage.setItem('accessToken', accessToken);
+      const { user, accessToken, organization } = res.data.data;
+      setAuth({ user, accessToken, organization });
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message ?? 'Erreur de connexion');
@@ -240,7 +239,13 @@ export default function LoginPage() {
           </form>
 
           {/* Bottom accent + branding */}
-          <div className="mt-10 pt-6 border-t border-guin-border text-center">
+          <div className="mt-10 pt-6 border-t border-guin-border text-center space-y-3">
+            <p className="text-guin-muted text-sm">
+              Pas encore de compte ?{' '}
+              <Link to="/signup" className="text-guin-gold hover:underline font-medium">
+                Créer un compte
+              </Link>
+            </p>
             <p className="text-guin-cream/30 text-xs tracking-widest">
               DZEDZE · Supervision Nettoyage · v1.0
             </p>

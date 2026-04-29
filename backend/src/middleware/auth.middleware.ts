@@ -7,6 +7,8 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 export interface AuthPayload {
   userId: string;
   role: 'admin' | 'manager' | 'agent';
+  orgId?: string;
+  plan?: string;
 }
 
 // ─── Verify JWT ───────────────────────────────────────────────

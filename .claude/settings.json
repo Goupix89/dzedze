@@ -47,7 +47,11 @@
       "Bash(PGPASSWORD=cs_secret psql -h localhost -p 5433 -U cs_user -d cleaning_supervision -c \"\\\\dt\")",
       "Bash(docker exec *)",
       "Bash(curl -s -X POST http://localhost:3000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"agent@dzedze.app\",\"password\":\"Agent@123!\"}')",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)['data']; print\\([[m['id'][:8], m['status'], m['title'][:30]] for m in d]\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)['data']; print\\([[m['id'][:8], m['status'], m['title'][:30]] for m in d]\\)\")",
+      "Bash(flutter devices *)",
+      "Bash(flutter emulators *)",
+      "Bash(flutter doctor *)",
+      "Bash(grep -v \"^$\")"
     ],
     "additionalDirectories": [
       "/tmp"

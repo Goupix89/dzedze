@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, ClipboardList, MapPin, Users,
-  LogOut, ChevronLeft, ChevronRight, Shield,
+  LogOut, ChevronLeft, ChevronRight, Shield, CreditCard,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth.store';
 import { clsx } from 'clsx';
@@ -31,16 +31,24 @@ function DzedzeMark({ size = 28 }: { size?: number }) {
 }
 
 const NAV = [
-  { to: '/',        label: 'Tableau de bord', Icon: LayoutDashboard },
-  { to: '/missions', label: 'Missions',       Icon: ClipboardList  },
-  { to: '/sites',    label: 'Sites',          Icon: MapPin         },
-  { to: '/users',    label: 'Agents',         Icon: Users          },
-  { to: '/audit',    label: 'Audit',          Icon: Shield         },
+  { to: '/',             label: 'Tableau de bord', Icon: LayoutDashboard },
+  { to: '/missions',     label: 'Missions',        Icon: ClipboardList  },
+  { to: '/sites',        label: 'Sites',           Icon: MapPin         },
+  { to: '/users',        label: 'Agents',          Icon: Users          },
+  { to: '/audit',        label: 'Audit',           Icon: Shield         },
+  { to: '/subscription', label: 'Abonnement',      Icon: CreditCard     },
 ];
+
+const PLAN_COLORS: Record<string, string> = {
+  trial:      '#6B7280',
+  essential:  '#D4A017',
+  business:   '#2D6A4F',
+  enterprise: '#C1440E',
+};
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, clearAuth } = useAuthStore();
+  const { user, organization, clearAuth } = useAuthStore();
   const navigate = useNavigate();
 
   function logout() { clearAuth(); navigate('/login'); }
@@ -107,7 +115,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* User + collapse */}
         <div className="p-3 border-t border-guin-border space-y-2">
-          {!collapsed && user && (
+          {!collapsed && organization && (
+            <NavLink to="/subscription" className="block px-2 py-1.5 rounded-xl hover:bg-white/5 transition-colors">
+              <p className="text-guin-cream text-xs font-semibold truncate">{organization.name}</p>
+              <span
+                className="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: `${PLAN_COLORS[organization.plan] ?? '#6B7280'}22`,
+                  color: PLAN_COLORS[organization.plan] ?? '#6B7280',
+                  border: `1px solid ${PLAN_COLORS[organization.plan] ?? '#6B7280'}55`,
+                }}
+              >
+                {organization.planName}
+                {organization.trialEndsAt && (() => {
+                  const days = Math.max(0, Math.ceil((new Date(organization.trialEndsAt).getTime() - Date.now()) / 86400000));
+                  return ` · J-${days}`;
+                })()}
+              </span>
+            </NavLink>
+          )}
+          {!collapsed && user && !organization && (
             <div className="px-2 py-1">
               <p className="text-guin-cream text-xs font-semibold truncate">
                 {user.first_name} {user.last_name}

@@ -35,12 +35,22 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
         // Stats semaine courante
         db.query(`
           SELECT
-            COUNT(*) FILTER (WHERE DATE(scheduled_start) = CURRENT_DATE)          AS today_missions,
-            COUNT(*) FILTER (WHERE status = 'in_progress')                         AS in_progress,
+            COUNT(*) FILTER (WHERE DATE(scheduled_start) = CURRENT_DATE)           AS today_missions,
+            COUNT(*) FILTER (WHERE status = 'in_progress')                          AS in_progress,
             ROUND(AVG(quality_score) FILTER (
               WHERE quality_score IS NOT NULL
               AND   completed_at >= NOW() - INTERVAL '30 days'
-            ), 1)                                                                   AS avg_quality_score
+            ), 1)                                                                    AS avg_quality_score,
+            ROUND(
+              AVG(EXTRACT(EPOCH FROM (actual_end - started_at)) / 60.0) FILTER (
+                WHERE actual_end IS NOT NULL AND started_at IS NOT NULL
+                AND   actual_end >= NOW() - INTERVAL '30 days'
+              )
+            )                                                                        AS avg_duration_minutes,
+            ROUND(
+              100.0 * COUNT(*) FILTER (WHERE status = 'completed')
+              / NULLIF(COUNT(*) FILTER (WHERE status IN ('completed','cancelled','review')), 0)
+            )                                                                        AS completion_rate
           FROM missions
         `),
 
@@ -117,8 +127,10 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
     const prevMissions  = parseInt(prev.prev_today);
     const mediaToday    = parseInt(mediaRow.rows[0].media_today);
     const mediaYest     = parseInt(prevMediaRow.rows[0].media_yesterday);
-    const avgQuality    = parseFloat(s.avg_quality_score) || null;
-    const prevQuality   = parseFloat(prev.prev_quality) || null;
+    const avgQuality       = parseFloat(s.avg_quality_score) || null;
+    const prevQuality      = parseFloat(prev.prev_quality) || null;
+    const avgDuration      = s.avg_duration_minutes != null ? parseInt(s.avg_duration_minutes) : null;
+    const completionRate   = s.completion_rate != null ? parseInt(s.completion_rate) : null;
 
     const trendPct = (curr: number, previous: number) =>
       previous === 0 ? null : Math.round(((curr - previous) / previous) * 100);
@@ -151,6 +163,8 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
         inProgress:      parseInt(s.in_progress),
         mediaToday,
         avgQualityScore: avgQuality,
+        avgDurationMinutes: avgDuration,
+        completionRate,
         missionsTrend:   trendPct(todayMissions, prevMissions),
         mediaTrend:      trendPct(mediaToday, mediaYest),
         qualityTrend:    avgQuality && prevQuality
@@ -301,20 +315,22 @@ export async function createMission(req: Request, res: Response, next: NextFunct
       scheduledStart, scheduledEnd, checklist, notes,
     } = req.body;
 
-    if (!siteId || !agentId || !title || !scheduledStart || !scheduledEnd) {
-      throw new AppError('Champs obligatoires manquants : siteId, agentId, title, scheduledStart, scheduledEnd', 400);
+    if (!siteId || !title || !scheduledStart || !scheduledEnd) {
+      throw new AppError('Champs obligatoires manquants : siteId, title, scheduledStart, scheduledEnd', 400);
     }
 
-    // Vérifier que l'agent n'a pas déjà une mission chevauchante
-    const overlap = await db.query(`
-      SELECT id FROM missions
-      WHERE agent_id = $1
-        AND status   NOT IN ('completed', 'cancelled')
-        AND tsrange(scheduled_start, scheduled_end) && tsrange($2::timestamptz, $3::timestamptz)
-    `, [agentId, scheduledStart, scheduledEnd]);
+    // Vérifier que l'agent n'a pas déjà une mission chevauchante (seulement si agent assigné)
+    if (agentId) {
+      const overlap = await db.query(`
+        SELECT id FROM missions
+        WHERE agent_id = $1
+          AND status   NOT IN ('completed', 'cancelled')
+          AND tstzrange(scheduled_start, scheduled_end) && tstzrange($2::timestamptz, $3::timestamptz)
+      `, [agentId, scheduledStart, scheduledEnd]);
 
-    if (overlap.rows.length > 0) {
-      throw new AppError('L\'agent a déjà une mission planifiée sur ce créneau', 409);
+      if (overlap.rows.length > 0) {
+        throw new AppError('L\'agent a déjà une mission planifiée sur ce créneau', 409);
+      }
     }
 
     // Récupérer le template de checklist du site si non fourni
@@ -498,11 +514,16 @@ export async function startMission(req: Request, res: Response, next: NextFuncti
       throw new AppError(`Impossible de démarrer une mission au statut "${mission.status}"`, 400);
     }
 
+    const { latitude, longitude } = req.body as { latitude?: number; longitude?: number };
+
     await db.query(`
       UPDATE missions
-      SET status = 'in_progress', started_at = NOW()
+      SET status      = 'in_progress',
+          started_at  = NOW(),
+          checkin_lat = $2,
+          checkin_lon = $3
       WHERE id = $1
-    `, [id]);
+    `, [id, latitude ?? null, longitude ?? null]);
 
     await AuditService.log({
       userId,
@@ -528,7 +549,7 @@ export async function completeMission(req: Request, res: Response, next: NextFun
   try {
     const { userId, role } = auth(req);
     const { id } = req.params;
-    const { checklist, notes } = req.body;
+    const { checklist, notes, latitude, longitude } = req.body;
 
     const result = await db.query('SELECT * FROM missions WHERE id = $1', [id]);
     const mission = result.rows[0];
@@ -565,11 +586,15 @@ export async function completeMission(req: Request, res: Response, next: NextFun
       UPDATE missions
       SET status        = 'review',
           completed_at  = NOW(),
+          actual_end    = NOW(),
           checklist     = COALESCE($1, checklist),
           notes         = COALESCE($2, notes),
-          quality_score = COALESCE($4, quality_score)
+          quality_score = COALESCE($4, quality_score),
+          checkout_lat  = $5,
+          checkout_lon  = $6
       WHERE id = $3
-    `, [checklist ? JSON.stringify(checklist) : null, notes, id, aiScore]);
+    `, [checklist ? JSON.stringify(checklist) : null, notes, id, aiScore,
+        latitude ?? null, longitude ?? null]);
 
     await AuditService.log({
       userId,

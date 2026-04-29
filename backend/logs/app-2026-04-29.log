@@ -5,3 +5,66 @@
 {"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T07:02:39.568Z"}
 {"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-29T07:03:48.675Z"}
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T07:04:13.000Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T07:46:07.940Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T07:46:11.994Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T07:46:12.024Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T07:46:12.094Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T07:46:12.095Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T07:46:12.096Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T07:47:11.539Z"}
+{"level":"error","message":"Unhandled error: invalid input syntax for type uuid: \"\"","path":"/api/v1/sites","stack":"error: invalid input syntax for type uuid: \"\"\n    at /app/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async createSite (/app/dist/controllers/site.controller.js:60:26)","timestamp":"2026-04-29T08:01:48.863Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:08:07.190Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:08:13.899Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:08:13.918Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:08:13.947Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:08:13.948Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:08:13.948Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T08:09:27.607Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:12:10.334Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:12:14.498Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:12:14.517Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:12:14.544Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:12:14.545Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:12:14.546Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:21:28.646Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:21:30.750Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:21:30.768Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:21:30.795Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:21:30.796Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:21:30.796Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:24:43.548Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:24:46.588Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:24:46.605Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:24:46.633Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:24:46.634Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:24:46.634Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T08:25:08.719Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T08:25:51.064Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:38:34.972Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:38:36.668Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:38:36.686Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:38:36.710Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:38:36.710Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:38:36.710Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:41:29.772Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:41:33.638Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:41:33.657Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:41:33.686Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:41:33.687Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:41:33.687Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T08:41:50.923Z"}
+{"level":"error","message":"Unhandled error: function tsrange(timestamp with time zone, timestamp with time zone) does not exist","path":"/api/v1/missions","stack":"error: function tsrange(timestamp with time zone, timestamp with time zone) does not exist\n    at /app/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async createMission (/app/dist/controllers/mission.controller.js:300:29)","timestamp":"2026-04-29T08:44:12.576Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:44:52.784Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:44:54.458Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:44:54.474Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:44:54.499Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:44:54.499Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:44:54.500Z"}
+{"level":"error","message":"Unhandled error: function tsrange(timestamp with time zone, timestamp with time zone) does not exist","path":"/api/v1/missions","stack":"error: function tsrange(timestamp with time zone, timestamp with time zone) does not exist\n    at /app/node_modules/pg-pool/index.js:45:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async createMission (/app/dist/controllers/mission.controller.js:300:29)","timestamp":"2026-04-29T08:45:43.272Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-29T08:46:18.220Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-29T08:46:20.919Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-29T08:46:20.944Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-29T08:46:20.967Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-29T08:46:20.967Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-29T08:46:20.968Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-29T08:46:57.193Z"}

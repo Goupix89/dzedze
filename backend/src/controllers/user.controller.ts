@@ -14,6 +14,9 @@ function assertRole(req: Request, roles: string[]) {
 const PUBLIC_COLS = `
   id, email, first_name, last_name, role, phone, avatar_url,
   status, is_active, quality_score, consent_given, last_login,
+  id_card_number, birth_date, birth_place, home_address, blood_type,
+  emergency_contact_name, emergency_contact_phone,
+  contract_type, hire_date, specialties, uniform_size, shoe_size, notes,
   created_at, updated_at
 `;
 
@@ -87,27 +90,50 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
     if (role === 'agent' && req.params.id !== userId)
       throw new AppError('Accès refusé', 403);
 
-    const { first_name, last_name, phone, avatar_url, fcm_token, device_id } = req.body;
+    const {
+      first_name, last_name, phone, avatar_url, fcm_token, device_id,
+      id_card_number, birth_date, birth_place, home_address, blood_type,
+      emergency_contact_name, emergency_contact_phone,
+      contract_type, hire_date, specialties, uniform_size, shoe_size, notes,
+    } = req.body;
 
-    // Only admin can change role / is_active
-    const roleChange    = role === 'admin' ? req.body.role     : undefined;
-    const activeChange  = role === 'admin' ? req.body.is_active : undefined;
+    const roleChange   = role === 'admin' ? req.body.role      : undefined;
+    const activeChange = role === 'admin' ? req.body.is_active  : undefined;
 
     const { rows } = await db.query(`
       UPDATE users SET
-        first_name  = COALESCE($1,  first_name),
-        last_name   = COALESCE($2,  last_name),
-        phone       = COALESCE($3,  phone),
-        avatar_url  = COALESCE($4,  avatar_url),
-        fcm_token   = COALESCE($5,  fcm_token),
-        device_id   = COALESCE($6,  device_id),
-        role        = COALESCE($7,  role),
-        is_active   = COALESCE($8,  is_active),
-        updated_at  = NOW()
-      WHERE id = $9
+        first_name               = COALESCE($1,  first_name),
+        last_name                = COALESCE($2,  last_name),
+        phone                    = COALESCE($3,  phone),
+        avatar_url               = COALESCE($4,  avatar_url),
+        fcm_token                = COALESCE($5,  fcm_token),
+        device_id                = COALESCE($6,  device_id),
+        role                     = COALESCE($7,  role),
+        is_active                = COALESCE($8,  is_active),
+        id_card_number           = COALESCE($9,  id_card_number),
+        birth_date               = COALESCE($10, birth_date),
+        birth_place              = COALESCE($11, birth_place),
+        home_address             = COALESCE($12, home_address),
+        blood_type               = COALESCE($13, blood_type),
+        emergency_contact_name   = COALESCE($14, emergency_contact_name),
+        emergency_contact_phone  = COALESCE($15, emergency_contact_phone),
+        contract_type            = COALESCE($16, contract_type),
+        hire_date                = COALESCE($17, hire_date),
+        specialties              = COALESCE($18, specialties),
+        uniform_size             = COALESCE($19, uniform_size),
+        shoe_size                = COALESCE($20, shoe_size),
+        notes                    = COALESCE($21, notes),
+        updated_at               = NOW()
+      WHERE id = $22
       RETURNING ${PUBLIC_COLS}
     `, [first_name, last_name, phone, avatar_url, fcm_token, device_id,
-        roleChange ?? null, activeChange ?? null, req.params.id]);
+        roleChange ?? null, activeChange ?? null,
+        id_card_number || null, birth_date || null, birth_place || null,
+        home_address || null, blood_type || null,
+        emergency_contact_name || null, emergency_contact_phone || null,
+        contract_type || null, hire_date || null,
+        specialties ?? null, uniform_size || null, shoe_size || null, notes || null,
+        req.params.id]);
 
     if (!rows.length) throw new AppError('Utilisateur introuvable', 404);
     await AuditService.log({

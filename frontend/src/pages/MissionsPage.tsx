@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { DateTimePicker } from '../components/ui/DateTimePicker';
 import {
   Plus, Search, Filter, Play, CheckCircle2, Clock,
   AlertCircle, XCircle, ChevronRight, X, MapPin, User, Calendar, Bot, Radio,
-  TrendingUp, TrendingDown, Minus,
+  TrendingUp, TrendingDown, Minus, Upload, ImagePlus, Loader2 as Loader,
 } from 'lucide-react';
 import { apiClient } from '../services/api';
 import { LiveStreamPanel } from '../components/video/LiveStreamPanel';
@@ -60,10 +61,12 @@ function StatusBadge({ status }: { status: string }) {
 // ── Create mission modal ───────────────────────────────────────
 function CreateMissionModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({
-    title: '', site_id: '', agent_id: '',
-    scheduled_start: '', scheduled_end: '', notes: '',
-  });
+  const [title, setTitle]   = useState('');
+  const [siteId, setSiteId] = useState('');
+  const [agentId, setAgentId] = useState('');
+  const [scheduledStart, setScheduledStart] = useState<Date | null>(null);
+  const [scheduledEnd,   setScheduledEnd]   = useState<Date | null>(null);
+  const [notes, setNotes]   = useState('');
 
   const { data: sitesData } = useQuery({
     queryKey: ['sites-list'],
@@ -75,26 +78,29 @@ function CreateMissionModal({ onClose }: { onClose: () => void }) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: typeof form) => apiClient.post('/missions', data),
+    mutationFn: () => apiClient.post('/missions', {
+      title,
+      siteId,
+      agentId:        agentId || undefined,
+      scheduledStart: scheduledStart?.toISOString(),
+      scheduledEnd:   scheduledEnd?.toISOString(),
+      notes:          notes || undefined,
+    }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['missions'] }); onClose(); },
   });
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }));
+  const selectClass = 'w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold';
+  const canSubmit = title && siteId && scheduledStart && scheduledEnd && !createMutation.isPending;
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.7)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
-        initial={{ scale: 0.95, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.95, y: 20 }}
+        initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
         className="w-full max-w-lg bg-guin-card border border-guin-border rounded-2xl overflow-hidden shadow-2xl"
       >
         <div className="h-1" style={{ background: 'repeating-linear-gradient(90deg,#C1440E 0,#C1440E 12px,#D4A017 12px,#D4A017 24px,#2D6A4F 24px,#2D6A4F 36px,#D4A017 36px,#D4A017 48px)' }} />
@@ -107,32 +113,28 @@ function CreateMissionModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="space-y-4">
+            {/* Titre */}
             <div>
-              <label className="text-xs text-guin-cream-dim mb-1 block">Titre *</label>
+              <label className="text-xs text-guin-muted mb-1 block">Titre *</label>
               <input
                 className="w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold"
                 placeholder="Ex: Nettoyage quotidien bureau Est"
-                value={form.title} onChange={set('title')}
+                value={title} onChange={e => setTitle(e.target.value)}
               />
             </div>
 
+            {/* Site + Agent */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-guin-cream-dim mb-1 block">Site *</label>
-                <select
-                  className="w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold"
-                  value={form.site_id} onChange={set('site_id')}
-                >
+                <label className="text-xs text-guin-muted mb-1 block">Site *</label>
+                <select className={selectClass} value={siteId} onChange={e => setSiteId(e.target.value)}>
                   <option value="">Choisir…</option>
                   {sitesData?.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-guin-cream-dim mb-1 block">Agent</label>
-                <select
-                  className="w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold"
-                  value={form.agent_id} onChange={set('agent_id')}
-                >
+                <label className="text-xs text-guin-muted mb-1 block">Agent</label>
+                <select className={selectClass} value={agentId} onChange={e => setAgentId(e.target.value)}>
                   <option value="">Non assigné</option>
                   {agentsData?.map(a => (
                     <option key={a.id} value={a.id}>
@@ -143,44 +145,45 @@ function CreateMissionModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
+            {/* Date pickers */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-guin-cream-dim mb-1 block">Début *</label>
-                <input
-                  type="datetime-local"
-                  className="w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold"
-                  value={form.scheduled_start} onChange={set('scheduled_start')}
-                />
-              </div>
-              <div>
-                <label className="text-xs text-guin-cream-dim mb-1 block">Fin *</label>
-                <input
-                  type="datetime-local"
-                  className="w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold"
-                  value={form.scheduled_end} onChange={set('scheduled_end')}
-                />
-              </div>
+              <DateTimePicker
+                label="Début"
+                required
+                value={scheduledStart}
+                onChange={setScheduledStart}
+                minDate={new Date()}
+                placeholder="JJ/MM/AAAA HH:mm"
+              />
+              <DateTimePicker
+                label="Fin"
+                required
+                value={scheduledEnd}
+                onChange={setScheduledEnd}
+                minDate={scheduledStart ?? new Date()}
+                placeholder="JJ/MM/AAAA HH:mm"
+              />
             </div>
 
+            {/* Notes */}
             <div>
-              <label className="text-xs text-guin-cream-dim mb-1 block">Notes</label>
+              <label className="text-xs text-guin-muted mb-1 block">Notes</label>
               <textarea
                 className="w-full bg-guin-dark border border-guin-border rounded-xl px-4 py-2.5 text-guin-cream text-sm focus:outline-none focus:border-guin-gold resize-none"
-                rows={3}
-                placeholder="Instructions particulières…"
-                value={form.notes} onChange={set('notes')}
+                rows={3} placeholder="Instructions particulières…"
+                value={notes} onChange={e => setNotes(e.target.value)}
               />
             </div>
 
             {createMutation.isError && (
               <p className="text-red-400 text-xs">
-                {(createMutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Erreur lors de la création'}
+                {(createMutation.error as any)?.response?.data?.message ?? 'Erreur lors de la création'}
               </p>
             )}
 
             <button
-              onClick={() => createMutation.mutate(form)}
-              disabled={!form.title || !form.site_id || !form.scheduled_start || !form.scheduled_end || createMutation.isPending}
+              onClick={() => createMutation.mutate()}
+              disabled={!canSubmit}
               className="w-full py-3 rounded-xl font-semibold text-sm bg-guin-terracotta text-guin-cream disabled:opacity-40 hover:bg-guin-terra-light transition-colors"
             >
               {createMutation.isPending ? 'Création…' : 'Créer la mission'}
@@ -194,10 +197,40 @@ function CreateMissionModal({ onClose }: { onClose: () => void }) {
 
 // ── Mission AI report modal ────────────────────────────────────
 function MissionReportModal({ missionId, onClose }: { missionId: string; onClose: () => void }) {
+  const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['ai-report', missionId],
     queryFn: () => apiClient.get<{ data: any }>(`/ai/mission/${missionId}/report`).then(r => r.data.data),
   });
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadedCount, setUploadedCount] = useState(0);
+
+  async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploading(true); setUploadError(null);
+    let ok = 0;
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('missionId', missionId);
+      fd.append('type', file.type.startsWith('video/') ? 'video' : 'photo');
+      fd.append('phase', 'inspection');
+      try {
+        await apiClient.post('/media/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        ok++;
+      } catch {
+        setUploadError(`Erreur sur ${file.name}`);
+      }
+    }
+    setUploadedCount(c => c + ok);
+    setUploading(false);
+    // Refresh report after upload
+    qc.invalidateQueries({ queryKey: ['ai-report', missionId] });
+    e.target.value = '';
+  }
 
   const scoreColor = (s: number | null) =>
     s == null ? '#6B7280' : s >= 7 ? '#2D6A4F' : s >= 5 ? '#D4A017' : '#C1440E';
@@ -314,6 +347,33 @@ function MissionReportModal({ missionId, onClose }: { missionId: string; onClose
               </p>
             </>
           )}
+
+          {/* Upload section */}
+          <div className="border-t border-guin-border pt-4">
+            <p className="text-guin-muted text-xs font-semibold uppercase mb-2">
+              Ajouter des photos / vidéos pour l'analyse IA
+            </p>
+            {uploadError && (
+              <p className="text-xs text-red-400 mb-2">{uploadError}</p>
+            )}
+            {uploadedCount > 0 && (
+              <p className="text-xs text-guin-green mb-2">
+                {uploadedCount} fichier{uploadedCount > 1 ? 's' : ''} envoyé{uploadedCount > 1 ? 's' : ''} — rapport mis à jour
+              </p>
+            )}
+            <label className={clsx(
+              'flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed rounded-xl cursor-pointer transition-colors text-sm',
+              uploading ? 'border-guin-border text-guin-muted cursor-not-allowed' : 'border-guin-border hover:border-guin-gold text-guin-muted hover:text-guin-gold',
+            )}>
+              {uploading
+                ? <><Loader size={16} className="animate-spin" /> Envoi en cours…</>
+                : <><ImagePlus size={16} /> Sélectionner des photos / vidéos</>}
+              <input
+                type="file" multiple accept="image/*,video/*" className="hidden"
+                onChange={handleFiles} disabled={uploading}
+              />
+            </label>
+          </div>
         </div>
       </motion.div>
     </div>
