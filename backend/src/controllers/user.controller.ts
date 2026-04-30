@@ -89,6 +89,11 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
     const { userId, role } = auth(req);
     if (role === 'agent' && req.params.id !== userId)
       throw new AppError('Accès refusé', 403);
+    if (role === 'manager' && req.params.id !== userId) {
+      const targetUser = await db.query('SELECT role FROM users WHERE id = $1', [req.params.id]);
+      if (!targetUser.rows[0] || targetUser.rows[0].role !== 'agent')
+        throw new AppError('Accès refusé: les managers ne peuvent modifier que les agents', 403);
+    }
 
     const {
       first_name, last_name, phone, avatar_url, fcm_token, device_id,
@@ -97,7 +102,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
       contract_type, hire_date, specialties, uniform_size, shoe_size, notes,
     } = req.body;
 
-    const roleChange   = role === 'admin' ? req.body.role      : undefined;
+    const roleChange   = (role === 'admin' || role === 'manager') ? req.body.role      : undefined;
     const activeChange = role === 'admin' ? req.body.is_active  : undefined;
 
     const { rows } = await db.query(`
@@ -148,21 +153,37 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 // PUT /users/:id/password
 export async function changePassword(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userId } = auth(req);
-    if (req.params.id !== userId) throw new AppError('Vous ne pouvez changer que votre propre mot de passe', 403);
+    const { userId, role } = auth(req);
+    const targetId = req.params.id;
+    const isChangingOther = targetId !== userId;
+
+    if (isChangingOther && !['admin', 'manager'].includes(role)) {
+      throw new AppError('Accès refusé: seuls les admin/manager peuvent changer les mots de passe des autres', 403);
+    }
+    if (isChangingOther && role === 'manager') {
+      const targetUser = await db.query('SELECT role FROM users WHERE id = $1', [targetId]);
+      if (!targetUser.rows[0] || targetUser.rows[0].role !== 'agent')
+        throw new AppError('Accès refusé: les managers ne peuvent changer les mots de passe que des agents', 403);
+    }
 
     const { current_password, new_password } = req.body;
-    if (!current_password || !new_password) throw new AppError('current_password et new_password requis', 400);
+    if (!new_password) throw new AppError('new_password requis', 400);
     if (new_password.length < 8) throw new AppError('Mot de passe trop court (8 caractères minimum)', 400);
 
-    const { rows } = await db.query('SELECT password_hash FROM users WHERE id = $1', [userId]);
-    if (!rows.length) throw new AppError('Utilisateur introuvable', 404);
-
-    const valid = await bcrypt.compare(current_password, rows[0].password_hash);
-    if (!valid) throw new AppError('Mot de passe actuel incorrect', 401);
+    if (!isChangingOther) {
+      if (!current_password) throw new AppError('current_password requis', 400);
+      const { rows } = await db.query('SELECT password_hash FROM users WHERE id = $1', [userId]);
+      if (!rows.length) throw new AppError('Utilisateur introuvable', 404);
+      const valid = await bcrypt.compare(current_password, rows[0].password_hash);
+      if (!valid) throw new AppError('Mot de passe actuel incorrect', 401);
+    }
 
     const hash = await bcrypt.hash(new_password, 12);
-    await db.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [hash, userId]);
+    await db.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [hash, targetId]);
+    await AuditService.log({
+      userId, action: 'PASSWORD_CHANGED', resourceType: 'user', resourceId: targetId,
+      ipAddress: req.ip, userAgent: req.headers['user-agent'],
+    });
     res.json({ success: true, message: 'Mot de passe mis à jour' });
   } catch (e) { next(e); }
 }

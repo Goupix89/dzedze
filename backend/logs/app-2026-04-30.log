@@ -1,0 +1,23 @@
+{"level":"info","message":"Database connected","timestamp":"2026-04-30T06:36:02.722Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-30T06:36:02.747Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-30T06:36:02.811Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-30T06:36:02.811Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-30T06:36:02.812Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T06:47:47.168Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-30T06:51:26.960Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T06:58:04.916Z"}
+{"level":"info","message":"User test@example.com logged in","timestamp":"2026-04-30T07:21:33.860Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T07:37:03.366Z"}
+{"level":"info","message":"User j.doe@gmail.com logged in","timestamp":"2026-04-30T07:40:06.859Z"}
+{"level":"info","message":"User j.doe@gmail.com logged in","timestamp":"2026-04-30T07:44:50.674Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T07:45:13.471Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T10:58:54.898Z"}
+{"level":"info","message":"User test@example.com logged in","timestamp":"2026-04-30T11:00:16.371Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-30T11:14:28.482Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-30T11:14:32.138Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-30T11:14:32.164Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-30T11:14:32.218Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-30T11:14:32.219Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-30T11:14:32.220Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T11:17:47.891Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T11:21:16.461Z"}
