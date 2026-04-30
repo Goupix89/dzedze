@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { db } from '../config/database';
 import { AuditService } from '../services/audit.service';
 import { AppError } from '../utils/AppError';
+import { getOrgContext } from '../middleware/auth.middleware';
 import { logger } from '../utils/logger';
 import { io } from '../app';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-type AuthReq = Request & { user: { userId: string; role: string } };
+type AuthReq = Request & { user: { userId: string; role: string; orgId?: string } };
 
 // ─── helpers ─────────────────────────────────────────────────
 function auth(req: Request): { userId: string; role: string } {
@@ -15,7 +16,8 @@ function auth(req: Request): { userId: string; role: string } {
 }
 
 function assertRole(req: Request, roles: string[]) {
-  if (!roles.includes(auth(req).role)) {
+  const { role } = auth(req);
+  if (role !== 'superadmin' && !roles.includes(role)) {
     throw new AppError(`Accès réservé aux rôles : ${roles.join(', ')}`, 403);
   }
 }
@@ -28,6 +30,9 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
     const yesterday  = subDays(today, 1);
     const weekAgo    = subDays(today, 7);
     const prevWeekAgo = subDays(today, 14);
+    const orgId = getOrgContext(req);
+    const orgFilter = orgId ? `AND m.organization_id = '${orgId}'` : '';
+    const orgFilterMedia = orgId ? `AND med.organization_id = '${orgId}'` : '';
 
     const [statsRow, prevRow, mediaRow, prevMediaRow, breakdownRow, anomaliesRow] =
       await Promise.all([
@@ -51,7 +56,7 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
               100.0 * COUNT(*) FILTER (WHERE status = 'completed')
               / NULLIF(COUNT(*) FILTER (WHERE status IN ('completed','cancelled','review')), 0)
             )                                                                        AS completion_rate
-          FROM missions
+          FROM missions m WHERE 1=1 ${orgFilter}
         `),
 
         // Stats semaine précédente (pour calculer le trend %)
@@ -64,7 +69,7 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
               WHERE quality_score IS NOT NULL
               AND   completed_at BETWEEN $3 AND $4
             ), 1) AS prev_quality
-          FROM missions
+          FROM missions m WHERE 1=1 ${orgFilter}
         `, [
           format(subDays(yesterday, 1), 'yyyy-MM-dd'),
           format(yesterday, 'yyyy-MM-dd'),
@@ -75,23 +80,23 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
         // Médias capturés aujourd'hui
         db.query(`
           SELECT COUNT(*) AS media_today
-          FROM   media
+          FROM   media med
           WHERE  created_at >= $1 AND created_at < $2
-            AND  deleted_at IS NULL
+            AND  deleted_at IS NULL ${orgFilterMedia}
         `, [startOfDay(today), endOfDay(today)]),
 
         // Médias hier (trend)
         db.query(`
           SELECT COUNT(*) AS media_yesterday
-          FROM   media
+          FROM   media med
           WHERE  created_at >= $1 AND created_at < $2
-            AND  deleted_at IS NULL
+            AND  deleted_at IS NULL ${orgFilterMedia}
         `, [startOfDay(yesterday), endOfDay(yesterday)]),
 
         // Répartition par statut
         db.query(`
           SELECT status, COUNT(*) AS count
-          FROM   missions
+          FROM   missions m WHERE 1=1 ${orgFilter}
           GROUP  BY status
           ORDER  BY ARRAY_POSITION(
             ARRAY['in_progress','planned','completed','review','cancelled'],
@@ -115,6 +120,7 @@ export async function getDashboardStats(req: Request, res: Response, next: NextF
           WHERE  med.created_at >= NOW() - INTERVAL '24 hours'
             AND  med.anomalies  != '[]'::jsonb
             AND  med.deleted_at IS NULL
+            ${orgFilterMedia}
           ORDER  BY med.created_at DESC
           LIMIT  9
         `),
@@ -214,6 +220,7 @@ export async function getQualityTrend(req: Request, res: Response, next: NextFun
 export async function listMissions(req: Request, res: Response, next: NextFunction) {
   try {
     const { userId, role } = auth(req);
+    const orgId = getOrgContext(req);
     const {
       status, site_id, agent_id,
       limit = '20', offset = '0',
@@ -222,6 +229,12 @@ export async function listMissions(req: Request, res: Response, next: NextFuncti
 
     const conditions: string[] = [];
     const params: unknown[]    = [];
+
+    // Isolation par organisation
+    if (orgId) {
+      params.push(orgId);
+      conditions.push(`m.organization_id = $${params.length}`);
+    }
 
     // Filtre rôle : un agent ne voit que ses missions
     if (role === 'agent') {

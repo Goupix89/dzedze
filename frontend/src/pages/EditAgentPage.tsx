@@ -129,7 +129,7 @@ export default function EditAgentPage() {
 
             <button
               type="submit"
-              disabled={mutation.isPending || (newPassword && newPassword.length < 8)}
+              disabled={mutation.isPending || (!!newPassword && newPassword.length < 8)}
               className="w-full bg-guin-gold text-guin-dark font-semibold py-2 rounded-lg hover:bg-guin-gold/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {mutation.isPending && <Loader2 className="animate-spin" size={16} />}

@@ -21,3 +21,20 @@
 {"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-30T11:14:32.220Z"}
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T11:17:47.891Z"}
 {"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T11:21:16.461Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-30T11:25:50.088Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-30T11:26:25.570Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-30T11:26:25.610Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-30T11:26:25.661Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-30T11:26:25.662Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-30T11:26:25.663Z"}
+{"level":"info","message":"User agent@dzedze.app logged in","timestamp":"2026-04-30T11:26:38.310Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T11:32:32.105Z"}
+{"level":"info","message":"User jeremienodzo@gmail.com logged in","timestamp":"2026-04-30T11:34:05.150Z"}
+{"level":"info","message":"SIGTERM received, shutting down gracefully...","timestamp":"2026-04-30T12:30:44.222Z"}
+{"level":"info","message":"Database connected","timestamp":"2026-04-30T12:30:52.442Z"}
+{"level":"info","message":"Redis connected","timestamp":"2026-04-30T12:30:52.487Z"}
+{"level":"info","message":"🚀 Server running on port 3000","timestamp":"2026-04-30T12:30:52.581Z"}
+{"level":"info","message":"📦 Environment: production","timestamp":"2026-04-30T12:30:52.582Z"}
+{"level":"info","message":"🔒 RGPD compliance: enabled","timestamp":"2026-04-30T12:30:52.583Z"}
+{"level":"info","message":"User manager@dzedze.app logged in","timestamp":"2026-04-30T12:41:28.084Z"}
+{"level":"info","message":"User admin@dzedze.app logged in","timestamp":"2026-04-30T12:42:46.962Z"}

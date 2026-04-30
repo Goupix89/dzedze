@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Search, UserCheck, Wifi, WifiOff, Star, X, ChevronDown, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, UserCheck, Wifi, WifiOff, Star, X, ChevronDown, UserPlus, AlertCircle, Loader2, Pencil, KeyRound } from 'lucide-react';
 import { apiClient } from '../services/api';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../store/auth.store';
@@ -358,6 +359,8 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const { user: me } = useAuthStore();
+  const navigate = useNavigate();
+  const canEdit = me?.role === 'admin' || me?.role === 'manager' || me?.role === 'superadmin';
 
   const { data, isLoading } = useQuery({
     queryKey: ['users', roleFilter, statusFilter],
@@ -509,6 +512,24 @@ export default function UsersPage() {
                       <p className="text-guin-cream-dim text-xs mt-1">
                         Dernière co. {format(new Date(u.last_login), 'dd MMM', { locale: fr })}
                       </p>
+                    )}
+                    {canEdit && (
+                      <div className="flex items-center gap-1 mt-2 justify-end">
+                        <button
+                          onClick={() => navigate(`/users/${u.id}/edit`)}
+                          title="Modifier l'agent"
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-guin-muted hover:text-guin-gold transition-colors"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => navigate(`/users/${u.id}/password`)}
+                          title="Changer le mot de passe"
+                          className="p-1.5 rounded-lg hover:bg-white/10 text-guin-muted hover:text-guin-terracotta transition-colors"
+                        >
+                          <KeyRound size={13} />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

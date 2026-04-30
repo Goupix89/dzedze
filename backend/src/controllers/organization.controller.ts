@@ -123,3 +123,49 @@ export async function upgradePlan(req: Request, res: Response, next: NextFunctio
     });
   } catch (err) { next(err); }
 }
+
+
+// ── GET /org/all ─────────────────────────────────── superadmin
+export async function listAllOrganizations(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const { rows } = await db.query(`
+      SELECT
+        o.id, o.name, o.plan, o.is_active,
+        o.created_at, o.trial_ends_at,
+        o.agent_limit, o.site_limit,
+        u.email AS owner_email,
+        u.first_name || ' ' || u.last_name AS owner_name,
+        (SELECT COUNT(*) FROM users    WHERE organization_id = o.id) AS users_count,
+        (SELECT COUNT(*) FROM missions WHERE organization_id = o.id) AS missions_count,
+        (SELECT COUNT(*) FROM missions WHERE organization_id = o.id AND status = 'in_progress') AS active_missions,
+        s.status AS sub_status, s.ends_at AS sub_ends_at
+      FROM organizations o
+      LEFT JOIN users u ON u.id = o.owner_id
+      LEFT JOIN subscriptions s ON s.organization_id = o.id
+        AND s.status NOT IN ('cancelled','expired')
+      ORDER BY o.created_at DESC
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (err) { next(err); }
+}
+
+// ── POST /org/validate-selection ───────────────────────────────
+export async function validateOrgSelection(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { orgId } = req.body;
+    if (!orgId) throw new AppError('orgId requis', 400);
+
+    const { rows } = await db.query(
+      'SELECT id, name FROM organizations WHERE id = $1 AND is_active = true',
+      [orgId]
+    );
+
+    if (!rows.length) throw new AppError('Organisation introuvable', 404);
+
+    res.json({
+      success: true,
+      data: { id: rows[0].id, name: rows[0].name },
+    });
+  } catch (err) { next(err); }
+}

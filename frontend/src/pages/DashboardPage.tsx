@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Camera, CheckCircle2, Clock, AlertTriangle,
   TrendingUp, Star, Wifi, LogOut, Timer, BarChart2,
+  Building2, ChevronDown, X,
 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -17,6 +18,91 @@ import { MissionTimeline } from '../components/missions/MissionTimeline';
 import { AgentCard } from '../components/dashboard/AgentCard';
 import { useAuthStore } from '../store/auth.store';
 import { clsx } from 'clsx';
+
+// ── Superadmin org selector ────────────────────────────────────
+function SuperadminOrgBanner() {
+  const { selectedOrgId, selectedOrgName, selectOrg } = useAuthStore();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [validating, setValidating] = useState(false);
+
+  const { data: orgs } = useQuery({
+    queryKey: ['all-orgs'],
+    queryFn: () => apiClient.get('/org/all').then(r => r.data.data),
+  });
+
+  async function pick(id: string, name: string) {
+    setValidating(true);
+    try {
+      // Validate on backend first
+      await apiClient.post('/org/validate-selection', { orgId: id });
+      selectOrg(id, name);
+      setOpen(false);
+      qc.invalidateQueries();
+    } catch (err: any) {
+      alert('Erreur: Organisation inaccessible\n' + (err.response?.data?.message || ''));
+      selectOrg(null, null);
+    } finally {
+      setValidating(false);
+    }
+  }
+
+  function clearOrg() {
+    selectOrg(null, null);
+    qc.invalidateQueries();
+  }
+
+  return (
+    <div className="bg-guin-indigo/20 border-b border-guin-indigo/40 px-6 py-2 flex items-center gap-3">
+      <Building2 size={14} className="text-guin-indigo-light" />
+      <span className="text-xs text-guin-indigo-light font-medium">Vue Superadmin ·</span>
+
+      <div className="relative">
+        <button
+          onClick={() => setOpen(!open)}
+          disabled={validating}
+          className="flex items-center gap-1.5 text-xs bg-guin-card border border-guin-border rounded-lg px-3 py-1 text-guin-cream hover:border-guin-gold/50 transition-colors disabled:opacity-50"
+        >
+          {selectedOrgName ?? 'Toutes les agences'}
+          <ChevronDown size={11} />
+        </button>
+
+        {open && (
+          <div className="absolute top-8 left-0 z-50 bg-guin-card border border-guin-border rounded-xl shadow-xl w-64 overflow-hidden">
+            <button
+              onClick={() => { clearOrg(); setOpen(false); }}
+              className="w-full px-4 py-2.5 text-xs text-left text-guin-cream-dim hover:bg-white/5 border-b border-guin-border"
+            >
+              Toutes les agences
+            </button>
+            <div className="max-h-60 overflow-y-auto">
+              {(orgs ?? []).map((o: any) => (
+                <button
+                  key={o.id}
+                  onClick={() => pick(o.id, o.name)}
+                  disabled={validating}
+                  className={clsx(
+                    'w-full px-4 py-2.5 text-xs text-left hover:bg-white/5 transition-colors disabled:opacity-50',
+                    selectedOrgId === o.id ? 'text-guin-gold' : 'text-guin-cream',
+                  )}
+                >
+                  <p className="font-medium">{o.name}</p>
+                  <p className="text-guin-muted">{o.plan} · {o.users_count} agents · {o.active_missions} en cours</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {selectedOrgId && (
+        <button onClick={clearOrg} className="ml-auto text-guin-muted hover:text-guin-cream transition-colors">
+          <X size={13} />
+        </button>
+      )}
+    </div>
+  );
+}
 
 const COLORS = ['#C1440E', '#D4A017', '#2D6A4F', '#1E2D5A'];
 
@@ -66,7 +152,7 @@ function StatCard({ icon: Icon, label, value, trend, accent }: {
 }
 
 export default function DashboardPage() {
-  const { user, clearAuth } = useAuthStore();
+  const { user, clearAuth, selectedOrgName } = useAuthStore();
   const navigate = useNavigate();
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
 
@@ -103,6 +189,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-guin-dark text-guin-cream">
       <KenteBar height={4} />
+      {user?.role === 'superadmin' && <SuperadminOrgBanner />}
 
       {/* ── Header ────────────────────────────────────────────── */}
       <header className="bg-guin-card border-b border-guin-border px-6 py-4 flex items-center justify-between">
@@ -117,7 +204,11 @@ export default function DashboardPage() {
           <div>
             <span className="font-display text-xl font-bold tracking-widest text-guin-gold">DZEDZE</span>
             <p className="text-guin-cream-dim text-xs mt-0.5">
-              {weekRange} · {user?.role === 'admin' ? 'Administrateur' : 'Manager'}
+              {weekRange} · {
+                user?.role === 'superadmin'
+                  ? `Superadmin${selectedOrgName ? ` · ${selectedOrgName}` : ' · Toutes agences'}`
+                  : user?.role === 'admin' ? 'Administrateur' : 'Manager'
+              }
             </p>
           </div>
         </div>

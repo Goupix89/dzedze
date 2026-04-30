@@ -2,12 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { db } from '../config/database';
 import { AuditService } from '../services/audit.service';
 import { AppError } from '../utils/AppError';
+import { getOrgContext } from '../middleware/auth.middleware';
 import bcrypt from 'bcryptjs';
 
-type AuthReq = Request & { user: { userId: string; role: string } };
+type AuthReq = Request & { user: { userId: string; role: string; orgId?: string } };
 function auth(req: Request) { return (req as AuthReq).user; }
 function assertRole(req: Request, roles: string[]) {
-  if (!roles.includes(auth(req).role))
+  const { role } = auth(req);
+  if (role !== 'superadmin' && !roles.includes(role))
     throw new AppError(`Accès réservé aux rôles : ${roles.join(', ')}`, 403);
 }
 
@@ -25,6 +27,7 @@ export async function listUsers(req: Request, res: Response, next: NextFunction)
   try {
     assertRole(req, ['admin', 'manager']);
     const { role, status, search, limit = '50', offset = '0' } = req.query as Record<string, string>;
+    const orgId = getOrgContext(req);
 
     let q = `SELECT ${PUBLIC_COLS},
                (SELECT COUNT(*) FROM missions WHERE agent_id = u.id AND status = 'completed') AS missions_completed,
@@ -33,6 +36,7 @@ export async function listUsers(req: Request, res: Response, next: NextFunction)
     const params: unknown[] = [];
     let p = 1;
 
+    if (orgId) { q += ` AND u.organization_id = $${p++}`; params.push(orgId); }
     if (role) { q += ` AND u.role = $${p++}`; params.push(role); }
     if (status) { q += ` AND u.status = $${p++}`; params.push(status); }
     if (search) {

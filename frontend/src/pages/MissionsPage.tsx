@@ -3,14 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 import { DateTimePicker } from '../components/ui/DateTimePicker';
 import {
   Plus, Search, Filter, Play, CheckCircle2, Clock,
   AlertCircle, XCircle, ChevronRight, X, MapPin, User, Calendar, Bot, Radio,
-  TrendingUp, TrendingDown, Minus, Upload, ImagePlus, Loader2 as Loader,
+  TrendingUp, TrendingDown, Minus, Upload, ImagePlus, Loader2 as Loader, Pencil,
 } from 'lucide-react';
 import { apiClient } from '../services/api';
 import { LiveStreamPanel } from '../components/video/LiveStreamPanel';
+import { useAuthStore } from '../store/auth.store';
 import { clsx } from 'clsx';
 
 // ── types ─────────────────────────────────────────────────────
@@ -554,6 +556,9 @@ export default function MissionsPage() {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { user: me } = useAuthStore();
+  const navigate = useNavigate();
+  const canEdit = me?.role === 'admin' || me?.role === 'manager' || me?.role === 'superadmin';
 
   const statusParam = statusFilter === 'active'
     ? 'planned,in_progress,review'
@@ -680,6 +685,15 @@ export default function MissionsPage() {
                     )}
                     {m.media_count > 0 && (
                       <span className="text-guin-cream-dim text-xs">{m.media_count} 📷</span>
+                    )}
+                    {canEdit && (
+                      <button
+                        onClick={e => { e.stopPropagation(); navigate(`/missions/${m.id}/edit`); }}
+                        title="Modifier la mission"
+                        className="p-1.5 rounded-lg hover:bg-white/10 text-guin-muted hover:text-guin-gold transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Pencil size={13} />
+                      </button>
                     )}
                     <ChevronRight size={16} className="text-guin-cream-dim group-hover:text-guin-gold transition-colors" />
                   </div>

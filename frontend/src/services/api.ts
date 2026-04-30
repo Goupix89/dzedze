@@ -8,5 +8,10 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  // Superadmin: inject selected org context for data scoping
+  const selectedOrgId = localStorage.getItem('selectedOrgId');
+  if (selectedOrgId) config.headers['X-Org-Id'] = selectedOrgId;
+
   return config;
 });
